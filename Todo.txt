@@ -1,0 +1,3 @@
+expo-sqlite
+native db
+export db to firebase or other hosted db
