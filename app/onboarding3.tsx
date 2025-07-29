@@ -4,6 +4,11 @@ import { Text, StyleSheet, Image, TextInput, TouchableOpacity, KeyboardAvoidingV
 import { useRouter } from 'expo-router';
 import { supabase } from '../utils/supabase';
 
+type User = {
+  name: string;
+  balance: number;
+};
+
 export default function Onboarding3Screen() {
   const router = useRouter();
   const [name, setName] = useState('');
@@ -21,7 +26,7 @@ export default function Onboarding3Screen() {
     }
     const { data, error } = await supabase
       .from('users')
-      .insert([{ name: name, balance: parsedBalance }]);
+      .insert<User>([{ name: name, balance: parsedBalance }]);
     if (error) {
       Alert.alert('Database Error', 'Failed to save user data.');
       return;

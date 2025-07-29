@@ -1,9 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TextInput, Image, TouchableOpacity, ScrollView, Alert } from 'react-native';
-import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { initDatabase, fetchCards, insertCard, deleteCard } from '../utils/database';
 
 const gradients = [
   ['#00c6ff', '#0072ff'],
@@ -16,7 +17,7 @@ const gradients = [
 function Card({ card, onRemove }: { card: any; onRemove: (id: number) => void }) {
   return (
     <LinearGradient
-      colors={card.gradient}
+      colors={[card.gradientStart, card.gradientEnd]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={styles.card}
@@ -38,48 +39,49 @@ export default function DashboardScreen() {
   const { balance } = useLocalSearchParams();
   const router = useRouter();
 
-  const [cards, setCards] = useState([
-    {
-      id: 0,
-      bankName: '',
-      cardNumber: '',
-      cardHolder: '',
-      expiryDate: '',
-      gradient: gradients[0],
-    },
-  ]);
+  const [cards, setCards] = useState<any[]>([]);
 
-  // New state variables for input fields
   const [bankNameInput, setBankNameInput] = useState('');
   const [cardNumberInput, setCardNumberInput] = useState('');
   const [cardHolderInput, setCardHolderInput] = useState('');
   const [expiryDateInput, setExpiryDateInput] = useState('');
 
-  // State to toggle add card module visibility
   const [showAddCard, setShowAddCard] = useState(false);
 
-  const addCard = () => {
+  useEffect(() => {
+    initDatabase();
+    loadCards();
+  }, []);
+
+  const loadCards = async () => {
+    try {
+      const data = await fetchCards();
+      setCards(data);
+    } catch (error) {
+      console.error('Failed to fetch cards:', error);
+    }
+  };
+
+  const addCard = async () => {
     if (!bankNameInput || !cardNumberInput || !cardHolderInput || !expiryDateInput) {
       Alert.alert('Error', 'Please fill in all card details.');
       return;
     }
 
-    const newId = cards.length > 0 ? cards[cards.length - 1].id + 1 : 1;
     const randomGradient = gradients[Math.floor(Math.random() * gradients.length)];
 
-    const newCard = {
-      id: newId,
-      bankName: bankNameInput,
-      cardNumber: cardNumberInput,
-      cardHolder: cardHolderInput,
-      expiryDate: expiryDateInput,
-      gradient: randomGradient,
-    };
-    setCards([...cards, newCard]);
-    setBankNameInput('');
-    setCardNumberInput('');
-    setCardHolderInput('');
-    setExpiryDateInput('');
+    try {
+      await insertCard(bankNameInput, cardNumberInput, cardHolderInput, expiryDateInput, randomGradient[0], randomGradient[1]);
+      setBankNameInput('');
+      setCardNumberInput('');
+      setCardHolderInput('');
+      setExpiryDateInput('');
+      setShowAddCard(false);
+      loadCards();
+    } catch (error) {
+      Alert.alert('Error', 'Failed to add card');
+      console.error('Insert card error:', error);
+    }
   };
 
   const removeCard = (id: number) => {
@@ -91,7 +93,15 @@ export default function DashboardScreen() {
         {
           text: 'Remove',
           style: 'destructive',
-          onPress: () => setCards(cards.filter(card => card.id !== id)),
+          onPress: async () => {
+            try {
+              await deleteCard(id);
+              loadCards();
+            } catch (error) {
+              Alert.alert('Error', 'Failed to remove card');
+              console.error('Delete card error:', error);
+            }
+          },
         },
       ]
     );
@@ -166,9 +176,9 @@ export default function DashboardScreen() {
       )}
 
       {/* Cards List */}
-      {/* {cards.map(card => (
+      {cards.map(card => (
         <Card key={card.id} card={card} onRemove={removeCard}  />
-      ))} */}
+      ))}
 
       {/* Pay and Receive */}
       <Text style={styles.sectionTitle}>Pay and Receive</Text>

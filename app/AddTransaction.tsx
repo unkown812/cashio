@@ -1,17 +1,39 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { IconSymbol } from '../components/ui/IconSymbol';
+import { initDatabase, insertTransaction } from '../utils/database';
 
 export default function AddTransaction() {
   const router = useRouter();
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
 
-  const onAdd = () => {
-    // Handle adding the transaction here
-    console.log('Add transaction:', { amount, description });
-    // Navigate back or to another screen if needed
+  useEffect(() => {
+    initDatabase();
+  }, []);
+
+  const onAdd = async () => {
+    if (!amount) {
+      Alert.alert('Validation Error', 'Please enter an amount');
+      return;
+    }
+    const amountNumber = parseFloat(amount);
+    if (isNaN(amountNumber)) {
+      Alert.alert('Validation Error', 'Amount must be a valid number');
+      return;
+    }
+    const date = new Date().toISOString();
+    try {
+      await insertTransaction(amountNumber, description, date);
+      Alert.alert('Success', 'Transaction added successfully');
+      setAmount('');
+      setDescription('');
+      // Optionally navigate back or to another screen
+    } catch (error) {
+      Alert.alert('Error', 'Failed to add transaction');
+      console.error('Insert transaction error:', error);
+    }
   };
 
   const onBack = () => {
