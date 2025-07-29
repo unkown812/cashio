@@ -39,7 +39,7 @@ export default function DashboardScreen() {
   const { balance } = useLocalSearchParams();
   const router = useRouter();
 
-  const [cards, setCards] = useState<any[]>([]);
+  const [cards, setCards] = useState<any>([]);
 
   const [bankNameInput, setBankNameInput] = useState('');
   const [cardNumberInput, setCardNumberInput] = useState('');
