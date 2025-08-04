@@ -24,8 +24,6 @@ export default function RootLayout() {
         <Stack.Screen name="onboarding3" options={{ headerShown: false }} />
         <Stack.Screen name="Transactions" options={{ headerShown: false }} />
         <Stack.Screen name="AddTransaction" options={{ headerShown: false }} />
-        {/* <Stack.Screen name="/(tabs)" options={{ headerShown: false }} /> */}
-        {/* <Stack.Screen name="/+not-found" options={{ headerShown: false }} /> */}
         <Stack.Screen name="DashboardScreen" options={{ headerShown: false }} />
       </Stack>
       <StatusBar style="auto" />

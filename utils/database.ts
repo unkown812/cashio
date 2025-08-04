@@ -1,6 +1,7 @@
 import * as SQLite from 'expo-sqlite';
+import type { SQLiteDatabase } from 'expo-sqlite';
 
-const db = (SQLite as any).openDatabase('userdata.db');
+const db: SQLiteDatabase = SQLite.openDatabase('userdata.db');
 
 export const initDatabase = () => {
   db.transaction((tx: any) => {
@@ -36,6 +37,21 @@ export const initDatabase = () => {
       },
       (_: any, error: any) => {
         console.log('Error creating cards table:', error);
+        return false;
+      }
+    );
+    tx.executeSql(
+      `CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY NOT NULL,
+        name TEXT NOT NULL,
+        balance REAL NOT NULL
+      );`,
+      [],
+      () => {
+        console.log('Users table created or already exists');
+      },
+      (_: any, error: any) => {
+        console.log('Error creating users table:', error);
         return false;
       }
     );
@@ -120,6 +136,24 @@ export const deleteCard = (id: number) => {
       tx.executeSql(
         `DELETE FROM cards WHERE id = ?;`,
         [id],
+        (_: any, result: any) => {
+          resolve(result);
+        },
+        (_: any, error: any) => {
+          reject(error);
+          return false;
+        }
+      );
+    });
+  });
+};
+
+export const insertUser = (name: string, balance: number) => {
+  return new Promise((resolve, reject) => {
+    db.transaction((tx: any) => {
+      tx.executeSql(
+        `INSERT INTO users (name, balance) VALUES (?, ?);`,
+        [name, balance],
         (_: any, result: any) => {
           resolve(result);
         },

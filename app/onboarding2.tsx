@@ -2,6 +2,8 @@ import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import * as SQLite from 'expo-sqlite';
+// const db = SQLite.openDatabaseSync('.db');
 
 export default function Onboarding2Screen() {
   const router = useRouter();

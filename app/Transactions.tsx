@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList } from 'react-native';
 import { Ionicons, MaterialCommunityIcons, FontAwesome5 } from '@expo/vector-icons';
 import { initDatabase, fetchTransactions } from '../utils/database';
+import * as SQLite from 'expo-sqlite';
+const db = SQLite.openDatabaseSync('../assets/data/userdata.db');
+
 
 export default function Transactions() {
   const [transactions, setTransactions] = useState([]);

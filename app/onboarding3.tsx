@@ -2,17 +2,15 @@
 import React, { useState } from 'react';
 import { Text, StyleSheet, Image, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { supabase } from '../utils/supabase';
-
-type User = {
-  name: string;
-  balance: number;
-};
+import { insertUser } from '../utils/database';
+import * as SQLite from 'expo-sqlite';
 
 export default function Onboarding3Screen() {
   const router = useRouter();
   const [name, setName] = useState('');
   const [balance, setBalance] = useState('');
+
+
 
   const onGetStarted = async () => {
     if (!name || !balance) {
@@ -24,14 +22,13 @@ export default function Onboarding3Screen() {
       Alert.alert('Error', 'Please enter a valid positive balance.');
       return;
     }
-    const { data, error } = await supabase
-      .from('users')
-      .insert<User>([{ name: name, balance: parsedBalance }]);
-    if (error) {
+    try {
+      await insertUser(name, parsedBalance);
+      router.replace(`/DashboardScreen?balance=${parsedBalance}`);
+    } catch (error) {
       Alert.alert('Database Error', 'Failed to save user data.');
-      return;
     }
-    router.replace(`/DashboardScreen?balance=${parsedBalance}`);
+    router.replace("/DashboardScreen");
   };
 
 
